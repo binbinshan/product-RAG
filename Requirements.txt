@@ -1,0 +1,15 @@
+langchain==1.1.0
+langchain-openai==1.1.6
+langchain-community==0.4.0
+langchain-core==1.2.4
+langgraph==1.0.4
+faiss-cpu==1.9.0.post1
+numpy>=2.1.0
+pydantic==2.10.3
+sentence-transformers==3.3.1
+rank-bm25==0.2.2
+
+langchain_milvus == 0.3.2
+langchain_deepseek == 1.0.1
+redis == 7.1.0
+langgraph-checkpoint-redis == 0.3.1
