@@ -5,14 +5,33 @@ Module 1: Query改写服务 - 分层重写策略
 使用 LangChain 1.1.0 API
 """
 import json
+import os
 import re
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass
+from dotenv import load_dotenv
 from models import QueryRewriteInput, QueryRewriteOutput
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+
+# 加载环境变量
+load_dotenv()
+
+
+def create_llm() -> ChatOpenAI:
+    """
+    从环境变量创建LLM实例
+
+    Returns:
+        ChatOpenAI实例
+    """
+    return ChatOpenAI(
+        model=os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo'),
+        temperature=float(os.getenv('OPENAI_TEMPERATURE', '0.1')),
+        # api_key和base_url会自动从环境变量OPENAI_API_KEY和OPENAI_BASE_URL读取
+    )
 
 
 class QueryType(Enum):
@@ -63,14 +82,17 @@ class QueryAnalyzer:
     """查询特征分析器"""
 
     def __init__(self):
+        # 品牌关键词
         self.brand_keywords = {
             "苹果", "华为", "小米", "oppo", "vivo", "三星", "iphone", "huawei",
             "nike", "adidas", "uniqlo", "优衣库", "zara", "h&m"
         }
+        # 类别关键词
         self.category_keywords = {
             "手机", "电脑", "笔记本", "平板", "耳机", "音箱", "相机",
             "衣服", "裤子", "鞋子", "包包", "化妆品", "护肤品", "奶粉", "零食"
         }
+        # 属性关键词
         self.attribute_keywords = {
             "颜色": ["红色", "蓝色", "黑色", "白色", "粉色", "绿色"],
             "尺寸": ["大号", "中号", "小号", "xl", "l", "m", "s"],
@@ -111,7 +133,8 @@ class QueryAnalyzer:
             recommended_strategies=recommended_strategies
         )
 
-    def _calculate_complexity(self, query: str, word_count: int, has_brand: bool, has_category: bool, has_attributes: bool) -> float:
+    def _calculate_complexity(self, query: str, word_count: int, has_brand: bool, has_category: bool,
+                              has_attributes: bool) -> float:
         """计算查询复杂度"""
         score = 0.0
 
@@ -133,7 +156,8 @@ class QueryAnalyzer:
 
         return min(score, 1.0)
 
-    def _determine_query_type(self, query_lower: str, word_count: int, has_brand: bool, has_category: bool, complexity_score: float) -> QueryType:
+    def _determine_query_type(self, query_lower: str, word_count: int, has_brand: bool, has_category: bool,
+                              complexity_score: float) -> QueryType:
         """确定查询类型"""
         if has_brand and word_count <= 4:
             return QueryType.BRANDED
@@ -148,7 +172,8 @@ class QueryAnalyzer:
         else:
             return QueryType.ATTRIBUTE
 
-    def _recommend_strategies(self, query_type: QueryType, complexity_score: float, word_count: int) -> List[RewriteStrategy]:
+    def _recommend_strategies(self, query_type: QueryType, complexity_score: float, word_count: int) -> List[
+        RewriteStrategy]:
         """根据查询特征推荐重写策略"""
         strategies = []
 
@@ -428,49 +453,17 @@ class HierarchicalQueryRewriteService:
 class QueryRewriteService:
     """Query改写服务 - 兼容原有接口的封装类"""
 
-    def __init__(self, llm: ChatOpenAI, use_hierarchical: bool = True, knowledge_base: Optional[Dict[str, Any]] = None):
+    def __init__(self, llm: ChatOpenAI, knowledge_base: Optional[Dict[str, Any]] = None):
         """
         初始化Query改写服务
 
         Args:
             llm: LangChain LLM实例
-            use_hierarchical: 是否使用分层重写策略，默认True
             knowledge_base: 知识库，用于检索增强重写
         """
         self.llm = llm
-        self.use_hierarchical = use_hierarchical
-
-        if use_hierarchical:
-            # 使用新的分层重写系统
-            self.hierarchical_service = HierarchicalQueryRewriteService(llm, knowledge_base)
-        else:
-            # 保持原有的LLM-only实现
-            self.prompt = ChatPromptTemplate.from_messages([
-                ("system", """你是一个电商商品查询改写专家。你的任务是:
-1. 理解用户的原始查询意图
-2. 生成3个不同角度的改写查询,用于检索
-3. 提取结构化的过滤条件
-
-改写原则:
-- 提取核心需求和关键特征
-- 考虑同义词和相关术语
-- 保持简洁,每个改写3-6个词
-
-输出必须是严格的JSON格式,包含:
-{{
-  "rewritten_queries": ["改写1", "改写2", "改写3"],
-  "filters": {{
-    "category": "品类",
-    "其他过滤条件": "值"
-  }}
-}}
-
-只返回JSON,不要有任何其他文字。"""),
-                ("human", """原始查询: {raw_query}
-用户上下文: {user_context}
-
-请生成改写结果:""")
-            ])
+        # 使用新的分层重写系统
+        self.hierarchical_service = HierarchicalQueryRewriteService(llm, knowledge_base)
 
     def rewrite(self, input_data: QueryRewriteInput) -> QueryRewriteOutput:
         """
@@ -482,12 +475,9 @@ class QueryRewriteService:
         Returns:
             QueryRewriteOutput: 改写结果
         """
-        if self.use_hierarchical:
-            # 使用分层重写系统
-            return self.hierarchical_service.rewrite(input_data)
-        else:
-            # 使用原有的LLM-only实现
-            return self._llm_only_rewrite(input_data)
+        # 使用分层重写系统
+        return self.hierarchical_service.rewrite(input_data)
+
 
     def _llm_only_rewrite(self, input_data: QueryRewriteInput) -> QueryRewriteOutput:
         """原有的LLM-only重写实现"""
@@ -548,6 +538,7 @@ if __name__ == "__main__":
     # 测试代码 - 展示分层重写策略
     import os
 
+
     # 模拟LLM (实际使用需要API key)
     class MockLLM:
         def invoke(self, messages):
@@ -559,7 +550,9 @@ if __name__ == "__main__":
                         "肠胃友好型 奶粉"
                     ]
                 }, ensure_ascii=False)
+
             return Response()
+
 
     # 测试不同类型的查询
     test_cases = [
@@ -586,7 +579,7 @@ if __name__ == "__main__":
     ]
 
     # 创建服务实例
-    service = QueryRewriteService(llm=MockLLM(), use_hierarchical=True)
+    service = QueryRewriteService(llm=MockLLM())
 
     print("=== 分层查询重写策略测试 ===\n")
 
@@ -612,33 +605,21 @@ if __name__ == "__main__":
 
         print("-" * 50)
 
-    # 测试原有接口兼容性
-    print("\n=== 原有接口兼容性测试 ===")
-    legacy_service = QueryRewriteService(llm=MockLLM(), use_hierarchical=False)
-
-    legacy_input = QueryRewriteInput(
-        raw_query="不上火的奶粉",
-        user_context={"channel": "miniapp"}
-    )
-
-    legacy_result = legacy_service.rewrite(legacy_input)
-    print("LLM-only模式结果:")
-    print(json.dumps(legacy_result.model_dump(), ensure_ascii=False, indent=2))
-
     print("\n=== 查询特征分析示例 ===")
     analyzer = QueryAnalyzer()
 
-    analysis_cases = [
-        "不上火的奶粉",
-        "苹果iPhone 14",
-        "什么牌子的护肤品好用又便宜",
-        "手机"
-    ]
-
-    for query in analysis_cases:
-        characteristics = analyzer.analyze(query)
-        print(f"\n查询: {query}")
-        print(f"类型: {characteristics.query_type.value}")
-        print(f"复杂度: {characteristics.complexity_score:.2f}")
-        print(f"推荐策略: {[s.value for s in characteristics.recommended_strategies]}")
-        print(f"特征: 品牌={characteristics.has_brand}, 品类={characteristics.has_category}, 属性={characteristics.has_attributes}")
+    # analysis_cases = [
+    #     "不上火的奶粉",
+    #     "苹果iPhone 14",
+    #     "什么牌子的护肤品好用又便宜",
+    #     "手机"
+    # ]
+    #
+    # for query in analysis_cases:
+    #     characteristics = analyzer.analyze(query)
+    #     print(f"\n查询: {query}")
+    #     print(f"类型: {characteristics.query_type.value}")
+    #     print(f"复杂度: {characteristics.complexity_score:.2f}")
+    #     print(f"推荐策略: {[s.value for s in characteristics.recommended_strategies]}")
+    #     print(
+    #         f"特征: 品牌={characteristics.has_brand}, 品类={characteristics.has_category}, 属性={characteristics.has_attributes}")

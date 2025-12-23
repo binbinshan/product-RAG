@@ -23,7 +23,7 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
 | 模块 | 状态 | 进度 | 说明             |
 |------|------|----|----------------|
 | Module 1: Query改写 | ✅ 已完成 | 100% | 分层重写策略已实现      |
-| Module 2: 混合检索 | 🚧 开发中 | 0% | ....           |
+| Module 2: 混合检索 |  ✅ 已完成 | 100% | ....           |
 | Module 3: 重排序 | 🚧 开发中 | 0% | ....  |
 | Module 4: 上下文构建 | 🚧 开发中 | 0% | ....  |
 | Module 5: 实时数据 | 🚧 开发中 | 0% | .... |
@@ -51,7 +51,7 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
 ### Module 2: Hybrid Search服务 (hybrid_search.py)
 - **职责**: 多路召回 (向量 + 关键词 + 过滤)
 - **子模块**:
-  - VectorRetrievalService: FAISS向量检索
+  - VectorRetrievalService: Milvus向量检索
   - KeywordRetrievalService: BM25关键词检索
   - HybridSearchService: 结果合并去重
 - **输出**: 合并后的候选商品列表
@@ -111,6 +111,47 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
 ```bash
 pip install -r requirements.txt
 ```
+
+## 配置环境
+
+### 1. 环境变量配置
+
+复制配置模板并设置环境变量：
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env` 文件配置以下项目：
+
+```bash
+# 数据库配置
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password_here
+DB_NAME=product_rag
+
+# Milvus向量数据库配置
+MILVUS_HOST=localhost
+MILVUS_PORT=19530
+MILVUS_COLLECTION_NAME=product_embeddings
+
+# 嵌入模型配置
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+
+# OpenAI API配置（LLM查询重写功能所需）
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_TEMPERATURE=0.1
+
+# 检索参数配置
+MAX_CANDIDATES=50
+VECTOR_TOP_K=20
+```
+
+### 2. 数据库
+使用 test_products.sql
 
 ## 快速开始
 
@@ -213,15 +254,19 @@ pipeline = ProductRAGPipeline(
 
 ```
 .
+├── .env.example           # 环境变量配置模板
+├── .env                   # 环境变量配置文件（需自行创建）
 ├── models.py              # 数据模型定义
 ├── query_rewrite.py       # Module 1: Query改写
 ├── hybrid_search.py       # Module 2: 混合检索
+├── index_builder.py       # 索引构建工具（向量+关键词索引）
 ├── rerank.py             # Module 3: 重排序
 ├── context_builder.py    # Module 4: 上下文构建
 ├── realtime_data.py      # Module 5: 实时数据
 ├── llm_generate.py       # Module 6: LLM生成
 ├── pipeline.py           # Module 7: 流程编排
 ├── test_all.py           # 完整测试脚本
+├── test_products.sql     # 数据库初始化SQL
 ├── requirements.txt      # 依赖包
 └── README.md            # 本文档
 ```
