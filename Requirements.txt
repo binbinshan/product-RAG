@@ -10,7 +10,7 @@ sentence-transformers==3.3.1
 rank-bm25==0.2.2
 jieba==0.42.1
 pymysql == 1.1.1
-
+httpx[socks]
 langchain_milvus == 0.3.2
 langchain_deepseek == 1.0.1
 redis == 7.1.0

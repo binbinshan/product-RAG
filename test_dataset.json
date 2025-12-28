@@ -1,0 +1,220 @@
+[
+  {
+    "query_id": "Q001",
+    "query": "不上火的奶粉",
+    "user_context": {
+      "channel": "miniapp",
+      "age_range": "3-6"
+    },
+    "expected_skus": [
+      "SKU_1001",
+      "SKU_3003"
+    ],
+    "relevant_skus": [
+      "SKU_1001",
+      "SKU_3003",
+      "SKU_5005",
+      "SKU_2002"
+    ],
+    "irrelevant_skus": [
+      "SKU_7001",
+      "SKU_8001"
+    ],
+    "expected_answer_keywords": [
+      "低乳糖",
+      "益生菌",
+      "肠胃",
+      "不上火"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "query_id": "Q002",
+    "query": "适合3岁宝宝的有机奶粉",
+    "user_context": {
+      "channel": "app",
+      "user_type": "premium"
+    },
+    "expected_skus": [
+      "SKU_2002",
+      "SKU_4004"
+    ],
+    "relevant_skus": [
+      "SKU_2002",
+      "SKU_4004",
+      "SKU_1001"
+    ],
+    "irrelevant_skus": [
+      "SKU_6001",
+      "SKU_7001"
+    ],
+    "expected_answer_keywords": [
+      "有机",
+      "3岁",
+      "天然",
+      "配方"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "query_id": "Q003",
+    "query": "含益生菌的配方奶粉推荐",
+    "user_context": {
+      "channel": "miniapp"
+    },
+    "expected_skus": [
+      "SKU_3003",
+      "SKU_5005"
+    ],
+    "relevant_skus": [
+      "SKU_3003",
+      "SKU_5005",
+      "SKU_1001"
+    ],
+    "irrelevant_skus": [
+      "SKU_6001",
+      "SKU_7001"
+    ],
+    "expected_answer_keywords": [
+      "益生菌",
+      "配方",
+      "肠道健康"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "query_id": "Q004",
+    "query": "高端进口奶粉有哪些选择",
+    "user_context": {
+      "channel": "app",
+      "user_type": "premium"
+    },
+    "expected_skus": [
+      "SKU_4004",
+      "SKU_6001"
+    ],
+    "relevant_skus": [
+      "SKU_4004",
+      "SKU_6001",
+      "SKU_2002"
+    ],
+    "irrelevant_skus": [
+      "SKU_1001",
+      "SKU_8001"
+    ],
+    "expected_answer_keywords": [
+      "进口",
+      "高端",
+      "品质",
+      "营养"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "query_id": "Q005",
+    "query": "我家宝宝总是拉肚子，想要个好消化的",
+    "user_context": {
+      "channel": "miniapp",
+      "user_type": "new_user"
+    },
+    "expected_skus": [
+      "SKU_1001",
+      "SKU_3003"
+    ],
+    "relevant_skus": [
+      "SKU_1001",
+      "SKU_3003",
+      "SKU_5005"
+    ],
+    "irrelevant_skus": [
+      "SKU_7001",
+      "SKU_8001"
+    ],
+    "expected_answer_keywords": [
+      "好消化",
+      "益生菌",
+      "肠胃",
+      "低乳糖"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "query_id": "Q006",
+    "query": "想要性价比高的，但是营养要跟得上",
+    "user_context": {
+      "channel": "app",
+      "user_type": "price_sensitive"
+    },
+    "expected_skus": [
+      "SKU_1001",
+      "SKU_3003"
+    ],
+    "relevant_skus": [
+      "SKU_1001",
+      "SKU_3003",
+      "SKU_2002"
+    ],
+    "irrelevant_skus": [
+      "SKU_4004",
+      "SKU_6001"
+    ],
+    "expected_answer_keywords": [
+      "性价比",
+      "营养",
+      "价格",
+      "优惠"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "query_id": "Q007",
+    "query": "有没有无糖的奶粉",
+    "user_context": {
+      "channel": "miniapp"
+    },
+    "expected_skus": [
+      "SKU_5005"
+    ],
+    "relevant_skus": [
+      "SKU_5005"
+    ],
+    "irrelevant_skus": [
+      "SKU_1001",
+      "SKU_2002",
+      "SKU_3003"
+    ],
+    "expected_answer_keywords": [
+      "无糖",
+      "0蔗糖",
+      "健康"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "query_id": "Q008",
+    "query": "1岁宝宝能喝的奶粉",
+    "user_context": {
+      "channel": "app",
+      "age_range": "1-3"
+    },
+    "expected_skus": [
+      "SKU_5005",
+      "SKU_1001"
+    ],
+    "relevant_skus": [
+      "SKU_5005",
+      "SKU_1001"
+    ],
+    "irrelevant_skus": [
+      "SKU_6001",
+      "SKU_7001"
+    ],
+    "expected_answer_keywords": [
+      "1岁",
+      "幼儿",
+      "配方",
+      "营养"
+    ],
+    "difficulty": "easy"
+  }
+]

@@ -23,17 +23,21 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
 | 模块 | 状态 | 进度 | 说明             |
 |------|------|----|----------------|
 | Module 1: Query改写 | ✅ 已完成 | 100% | 分层重写策略已实现      |
-| Module 2: 混合检索 |  ✅ 已完成 | 100% | ....           |
-| Module 3: 重排序 | 🚧 开发中 | 0% | ....  |
-| Module 4: 上下文构建 | 🚧 开发中 | 0% | ....  |
-| Module 5: 实时数据 | 🚧 开发中 | 0% | .... |
-| Module 6: LLM生成 | 🚧 开发中 | 0% | .... |
-| Module 7: 流程编排 |  🚧 开发中 | 0% | ....  |
+| Module 2: 混合检索 |  ✅ 已完成 | 100% | 向量+关键词混合召回           |
+| Module 3: 重排序 | ✅ 已完成 | 100% | BGE+LLM双重排序策略  |
+| Module 4: 上下文构建 | ✅ 已完成 | 100% | 商品信息结构化处理  |
+| Module 5: 实时数据 | ✅ 已完成 | 100% | 价格库存促销数据查询 |
+| Module 6: LLM生成 | ✅ 已完成 | 100% | 机器校验+结构化输出 |
+| Module 7: 流程编排 |  ✅ 已完成 | 100% | LangGraph状态管理  |
 | 数据模型 | ✅ 已完成 | 100% | 全部Pydantic模型定义 |
-| 测试覆盖 | 🚧 开发中 | 0% | 各模块单元测试        |
+| 测试覆盖 | ✅ 已完成 | 85% | 主要模块测试+LangGraph验证        |
 
 ### 最新更新 🆕
-- **Module 1**: 新增分层重写策略系统，支持规则扩展、同义词、LLM优化、检索增强四种策略
+- **全系统完成**: 所有7个核心模块已全部实现并通过测试
+- **LangGraph集成**: 修复Node传参和State契约问题，流程编排完全可用
+- **机器校验**: LLM生成增加ValidationError机制，确保输出合规性
+- **BGE重排序**: 修复pairs/candidates匹配问题，支持Cross-encoder精排
+- **结构化输出**: 全面使用LangChain 1.1.0的with_structured_output API
 
 ## 模块说明
 
@@ -56,13 +60,17 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
   - HybridSearchService: 结果合并去重
 - **输出**: 合并后的候选商品列表
 
-### Module 3: Rerank重排序服务 (rerank.py)
+### Module 3: Rerank重排序服务 (rerank.py) ✅
 - **职责**: 对候选商品精排,选出Top-N
 - **排序维度**:
   - Query-商品语义相关度
   - 商品质量和特性
   - 业务权重
-- **实现**: 使用LLM或Cross-Encoder精排
+- **实现**: BGE Cross-encoder + LLM双重排序策略
+- **关键修复**:
+  - ✅ 修复BGE pairs/candidates数量匹配问题
+  - ✅ 统一fallback排序逻辑，基于商品质量评分
+  - ✅ 添加RankedCandidate模型，包含完整排序信息
 
 ### Module 4: 上下文构建服务 (context_builder.py)
 - **职责**: 整理商品信息为LLM可消费格式
@@ -78,20 +86,30 @@ QueryRewrite → HybridSearch → Rerank → ContextBuilder → RealTimeData →
   - 禁止缓存到向量库
   - 数据必须来自实时查询
 
-### Module 6: LLM生成服务 (llm_generate.py)
+### Module 6: LLM生成服务 (llm_generate.py) ✅
 - **职责**: 基于商品上下文生成导购回答
 - **约束**:
   - 只能推荐给定商品
   - 不得编造功效/价格
   - 推荐理由可回溯
   - 实时数据必须准确
+- **关键改进**:
+  - ✅ 添加机器校验层(ValidationError)，检验价格、库存合规性
+  - ✅ 使用with_structured_output代替JSON解析
+  - ✅ 增强Mock LLM支持模板变量替换
+  - ✅ 添加generation_type和recommended_skus字段
 
-### Module 7: 流程编排 (pipeline.py)
+### Module 7: 流程编排 (pipeline.py) ✅
 - **职责**: LangGraph编排完整RAG流程
 - **特性**:
   - 状态管理
   - 节点间数据传递
   - 可视化流程图
+- **关键修复**:
+  - ✅ 修复Node传参问题，使用lambda包装Service调用
+  - ✅ 明确State读写契约，确保状态正确流转
+  - ✅ 更新GraphState定义，包含所有observability字段
+  - ✅ 增强Mock LLM支持结构化输出
 
 ## 数据模型 (models.py)
 
@@ -122,33 +140,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-编辑 `.env` 文件配置以下项目：
-
-```bash
-# 数据库配置
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_password_here
-DB_NAME=product_rag
-
-# Milvus向量数据库配置
-MILVUS_HOST=localhost
-MILVUS_PORT=19530
-MILVUS_COLLECTION_NAME=product_embeddings
-
-# 嵌入模型配置
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-
-# OpenAI API配置（LLM查询重写功能所需）
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-3.5-turbo
-OPENAI_TEMPERATURE=0.1
-
-# 检索参数配置
-MAX_CANDIDATES=50
-VECTOR_TOP_K=20
-```
+编辑 `.env` 文件配置以下项目
 
 ### 2. 数据库
 使用 test_products.sql
@@ -198,7 +190,11 @@ print(result['final_response'])
 ### 3. 运行所有测试
 
 ```bash
+# 运行完整系统测试
 python test_all.py
+
+# 运行LangGraph状态流转验证
+python test_langgraph_flow.py
 ```
 
 ## 使用真实LLM
@@ -266,6 +262,7 @@ pipeline = ProductRAGPipeline(
 ├── llm_generate.py       # Module 6: LLM生成
 ├── pipeline.py           # Module 7: 流程编排
 ├── test_all.py           # 完整测试脚本
+├── test_langgraph_flow.py # LangGraph状态流转测试
 ├── test_products.sql     # 数据库初始化SQL
 ├── requirements.txt      # 依赖包
 └── README.md            # 本文档

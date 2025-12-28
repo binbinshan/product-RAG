@@ -1,0 +1,26 @@
+{
+  "retrieval": {
+    "avg_precision_at_5": 0.375,
+    "avg_recall_at_5": 0.71875,
+    "avg_ndcg_at_5": 0.6857790769860561,
+    "avg_mrr": 0.7916666666666666,
+    "avg_map": 0.6145833333333333
+  },
+  "generation": {
+    "avg_keyword_coverage": 0.5833333333333333,
+    "avg_sku_accuracy": 0.45833333333333326,
+    "avg_answer_relevance": 0.5208333333333333
+  },
+  "latency": {
+    "avg_total_time": 0.11006444692611694,
+    "p95_total_time": 0.22004163265228266,
+    "p99_total_time": 0.2546612501144409,
+    "avg_query_rewrite_time": 0.0,
+    "avg_vector_search_time": 0.0,
+    "avg_rerank_time": 0.0,
+    "avg_llm_generate_time": 0.0
+  },
+  "total_queries": 8,
+  "failed_queries": [],
+  "success_rate": 1.0
+}
